@@ -1,0 +1,154 @@
+# title: Peer Assignment 1 - Reproducible Data
+
+### This assignement makes use of walking data for an anonymous individual collected over two months.  The data consists of the number of steps taken in 5 minute intervals over the entire day. This data collection covered the entire two months of August and November, 2012.
+
+## Loading and preprocessing the data
+
+
+```{r} 
+
+DF <- read.csv("activity.csv")
+## head(DF)
+
+``` 
+
+## What is the mean total number of steps taken per day?
+
+
+```{r} 
+DF1 <- aggregate(steps ~ date, DF, FUN=sum)
+
+hist(DF1[,2],main="Histogram of steps taken per day",xlab="Steps", ylab="Days")
+
+``` 
+
+### Mean number of steps taken per day:
+
+```{r} 
+DF2 <- summary(DF)
+a <- DF2[4,3]
+
+``` 
+The mean number of steps taken per day is: `r a` steps
+
+
+#### Median number of steps taken per day:
+
+```{r} 
+DF3 <- summary(DF)
+b <- DF3[3,3]
+``` 
+The median number of steps taken per day is: `r b` steps
+
+#### What is the average daily activity pattern?
+
+```{r} 
+DF4 <- aggregate(steps ~ interval, DF, mean)
+plot(DF4$steps, typ='l',main= "plot steps per 5 minute interval",ylab="Steps",xlab = "Interval")
+
+``` 
+
+
+#### When were the most steps taken during the day?
+
+
+```{r} 
+c <- which.max(DF4[,2])
+
+``` 
+The most number of steps taken during the day is during the `r c` interval
+
+
+### Imputing missing values
+#### How many values were missing from the data set (marked as "NA")
+
+
+```{r} 
+DF5 <- apply(is.na(DF),2,sum)
+d <- as.numeric(DF5[1])
+
+``` 
+There were `r d` values missing from the original data (marked as "NA")
+
+
+#### Replace "NA" values with the mean for that time interval and display a histogram of the steps per day
+
+```{r} 
+## create a data frame of just the NA items
+DF6 <- subset(DF, is.na(DF$steps))
+## create a data frame of rows that aren't NAs
+DF7 <- subset(DF, !is.na(DF$steps))
+## match the NA items to the mean for the same interval
+DF6$steps <- DF4$steps[ match(DF6$interval,DF4$interval)]
+DF9 <- rbind(DF6, DF7)
+## plot a histogram of DF9
+
+``` 
+
+#### Create a histogram of the steps mean per day data
+
+```{r} 
+DF10 <- aggregate(steps ~ date, DF9, sum)
+
+hist(DF10[,2],main="Historgram of adjusted total steps per day", xlab = "Total number of steps",ylab="Days")
+
+
+``` 
+
+#### Mean number of steps taken per day:
+
+```{r} 
+DF11 <- summary(DF9)
+e <- DF11[4,3]
+
+``` 
+After replacing all the "NA"" values in the data with the mean values for that particular interval of the day, the mean number of steps after replacement is `r e` steps.
+
+
+#### Median number of steps taken per day:
+
+```{r} 
+DF12 <- summary(DF9)
+f <- DF12[3,3]
+``` 
+After replacing all the "NA"" values in the data with the mean values for that particular interval of the day, the median number of steps after replacement is `r f` steps.
+
+
+
+##### NOTE: These values for median and mean number of steps per day do not change by replacing NA's with the average number of steps taken during the time intervals.  This is because we are adding averages to the totals, which end up having no impact on the averages.  
+
+
+Identify records taken during the week (M-F) and those taken on the week-end (Sat, Sun)
+
+
+```{r} 
+DF13 <- DF
+for (i in 1:nrow(DF13)) {
+        TheDay <- as.Date(DF13[i,2],"%m/%d/%y")-2922
+        WeekDay <- format(TheDay, "%a")
+        if(WeekDay %in% c("Mon","Tue","Wed","Thu","Fri")) {
+                DF13[i,4] <- 1
+        }else {
+                DF13[i,4] <- 2
+        }
+}
+
+AB1 <- subset(DF13, V4==1)
+AB2 <- subset(DF13, V4==2)
+
+``` 
+
+Now, draw line plots of the two data sets
+
+```{r} 
+par(mfrow=c(2,1))
+
+AB3 <- aggregate(steps ~ interval, AB1, mean)
+plot(AB3$steps, typ='l',main= "Weekdays",ylab="Steps",xlab = "Interval")
+
+AB4 <- aggregate(steps ~ interval, AB2, mean)
+plot(AB4$steps, typ='l',main= "Weekends",ylab="Steps",xlab = "Interval")
+
+
+``` 
+
